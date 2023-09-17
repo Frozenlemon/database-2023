@@ -6,6 +6,7 @@ const {
 	updateProductMongo,
 	deleteCategoryMongo,
 	getAllProductMongo,
+	getParentCateMongo,
 } = require('../../Repository/MongodbRepo');
 const {
 	insertProductMySql,
@@ -267,6 +268,34 @@ async function getInventoryService(mapObject) {
 	}
 }
 
+async function getParentCateService(user) {
+	try {
+		const cateReturn = await getParentCateMongo(user);
+		if (!cateReturn.err) {
+			return {
+				id: cateReturn.message._id.toString(),
+				name: cateReturn.message.name,
+			};
+		}
+	} catch (e) {
+		return { err: true, message: e.message };
+	}
+}
+
+async function getChildCateService(user) {
+	try {
+		const cateReturn = await getChildCateService(user);
+		if (!cateReturn.err) {
+			return {
+				id: cateReturn.message._id.toString(),
+				name: cateReturn.message.name,
+			};
+		}
+	} catch (e) {
+		return { err: true, message: e.message };
+	}
+}
+
 module.exports = {
 	insertProductService: insertProductService,
 	updateProductDTOService: updateProductService,
@@ -281,4 +310,6 @@ module.exports = {
 	updateCategoryService: updateCategoryService,
 	deleteCategoryService: deleteCategoryService,
 	getInventoryService: getInventoryService,
+	getParentCateService: getParentCateService,
+	getChildCateService: getChildCateService,
 };

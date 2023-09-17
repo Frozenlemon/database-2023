@@ -15,6 +15,8 @@ const {
 	transferInventoryService,
 	getAllProductService,
 	createPOService,
+	getParentCateService,
+	getChildCateService,
 } = require('../../Service/WMSService');
 
 router.get('/', authenticateTokenService, async (req, res) => {
@@ -131,6 +133,17 @@ router.post('/createpo', authenticateTokenService, async (req, res) => {
 		});
 		if (!response.err) {
 			res.send(200);
+		}
+	} catch (e) {
+		console.log(e.message);
+	}
+});
+
+router.get('/getparentcate', authenticateTokenService, async (req, res) => {
+	try {
+		const response = await getParentCateService(req.userRole);
+		if (!response.err) {
+			res.send(response);
 		}
 	} catch (e) {
 		console.log(e.message);

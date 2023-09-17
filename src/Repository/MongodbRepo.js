@@ -350,6 +350,46 @@ async function UpdateProduct(user, updateProdDTO) {
 	}
 }
 
+async function getParentCate(user) {
+	let conn;
+
+	try {
+		conn = await getMongoConn(user);
+		const result = await conn.cate
+			.find({ parentCate: null }, '_id name')
+			.sort({ name: 1 })
+			.lean()
+			.exec();
+		return { message: result[0], err: false };
+	} catch (e) {
+		return { err: true, message: e.message };
+	} finally {
+		if (!!conn) {
+			await conn.conn.close();
+		}
+	}
+}
+
+async function getChildCate(user) {
+	let conn;
+
+	try {
+		conn = await getMongoConn(user);
+		const result = await conn.cate
+			.find({ parentCate: { $ne: null } }, '_id name')
+			.sort({ name: 1 })
+			.lean()
+			.exec();
+		return { message: result[0], err: false };
+	} catch (e) {
+		return { err: true, message: e.message };
+	} finally {
+		if (!!conn) {
+			await conn.conn.close();
+		}
+	}
+}
+
 module.exports = {
 	getAllProductMongo: getAllProduct,
 	updateProductMongo: UpdateProduct,
@@ -361,4 +401,6 @@ module.exports = {
 	getProduct: getProduct,
 	getCartProduct: getCartProduct,
 	getCateMongo: getCate,
+	getParentCateMongo: getParentCate,
+	getChildCateMongo: getChildCate,
 };
