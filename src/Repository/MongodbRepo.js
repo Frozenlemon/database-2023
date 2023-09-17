@@ -360,7 +360,7 @@ async function getParentCate(user) {
 			.sort({ name: 1 })
 			.lean()
 			.exec();
-		return { message: result[0], err: false };
+		return { message: result, err: false };
 	} catch (e) {
 		return { err: true, message: e.message };
 	} finally {
@@ -375,12 +375,19 @@ async function getChildCate(user) {
 
 	try {
 		conn = await getMongoConn(user);
+		const popObject = {
+			path: 'parentCate',
+			model: conn.cate,
+			options: { sort: { position: -1 } },
+			select: '_id name attribute',
+		};
 		const result = await conn.cate
-			.find({ parentCate: { $ne: null } }, '_id name')
+			.find({ parentCate: { $ne: null } })
+			.populate(popObject)
 			.sort({ name: 1 })
 			.lean()
 			.exec();
-		return { message: result[0], err: false };
+		return { message: result, err: false };
 	} catch (e) {
 		return { err: true, message: e.message };
 	} finally {

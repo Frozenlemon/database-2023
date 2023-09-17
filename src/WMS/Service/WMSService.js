@@ -7,6 +7,7 @@ const {
 	deleteCategoryMongo,
 	getAllProductMongo,
 	getParentCateMongo,
+	getChildCateMongo,
 } = require('../../Repository/MongodbRepo');
 const {
 	insertProductMySql,
@@ -272,10 +273,7 @@ async function getParentCateService(user) {
 	try {
 		const cateReturn = await getParentCateMongo(user);
 		if (!cateReturn.err) {
-			return {
-				id: cateReturn.message._id.toString(),
-				name: cateReturn.message.name,
-			};
+			return cateReturn.message;
 		}
 	} catch (e) {
 		return { err: true, message: e.message };
@@ -284,12 +282,9 @@ async function getParentCateService(user) {
 
 async function getChildCateService(user) {
 	try {
-		const cateReturn = await getChildCateService(user);
+		const cateReturn = await getChildCateMongo(user);
 		if (!cateReturn.err) {
-			return {
-				id: cateReturn.message._id.toString(),
-				name: cateReturn.message.name,
-			};
+			return cateReturn.message;
 		}
 	} catch (e) {
 		return { err: true, message: e.message };
