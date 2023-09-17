@@ -12,8 +12,10 @@ const {
 	deleteWarehouseService,
 	insertWarehouseService,
 	getInventoryService,
+	transferInventoryService,
+	getAllProductService,
+	createPOService,
 } = require('../../Service/WMSService');
-const { response } = require('express');
 
 router.get('/', authenticateTokenService, async (req, res) => {
 	res.render('warehouseManagement.ejs');
@@ -88,8 +90,48 @@ router.get('/inventoryManagement', authenticateTokenService, (req, res) => {
 router.post('/displayInvent', authenticateTokenService, async (req, res) => {
 	try {
 		const response = await getInventoryService({ user: req.userRole });
-		console.log(response);
 		res.send(response);
+	} catch (e) {
+		console.log(e.message);
+	}
+});
+
+router.post('/transfer', authenticateTokenService, async (req, res) => {
+	try {
+		const response = await transferInventoryService(req.userRole, {
+			id: req.body.product,
+			fromWhId: req.body.from,
+			toWhId: req.body.to,
+			qty: req.body.quantity,
+		});
+		if (!response.err) {
+			res.send(200);
+		}
+	} catch (e) {
+		console.log(e.message);
+	}
+});
+
+router.get('/getproducts', authenticateTokenService, async (req, res) => {
+	try {
+		const response = await getAllProductService(req.userRole);
+		if (!response.err) {
+			res.send(response.message);
+		}
+	} catch (e) {
+		console.log(e.message);
+	}
+});
+
+router.post('/createpo', authenticateTokenService, async (req, res) => {
+	try {
+		const response = await createPOService(req.userRole, {
+			id: req.body.product,
+			qty: req.body.quantity,
+		});
+		if (!response.err) {
+			res.send(200);
+		}
 	} catch (e) {
 		console.log(e.message);
 	}

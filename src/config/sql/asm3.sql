@@ -1,3 +1,6 @@
+-- Set password validation
+SET GLOBAL validate_password.policy = LOW;
+
 -- Drop role
 drop role if exists warehouse_admin;
 
@@ -427,7 +430,7 @@ grant execute on procedure public.product_purchase_order to warehouse_staff;
 grant execute on procedure public.product_transfer to warehouse_staff;
 
 -- Grant permission for role
-grant select on public.warehouse_inventory to customer;
+grant select on public.warehouse_inventory to customer, warehouse_admin;
 
 
 -- Set role as default for user

@@ -1,8 +1,238 @@
 document.addEventListener('DOMContentLoaded', async () => {
 	const urlParam = new URLSearchParams(window.location.search);
 	const token = urlParam.get('token');
-	await renderDisplay(token);
+
+	let data = await renderDisplay(token);
+
+	const transferButton = document.getElementById('transfer-button');
+	transferButton.addEventListener('click', () => {
+		renderTransferModalDropdown(data);
+	});
+
+	const commitPo = document.getElementById('commit-po');
+	commitPo.addEventListener('click', async () => {
+		try {
+			const productId = document.getElementById('po-product-dropdown')
+				.dataset.id;
+			const quantity = document.getElementById(
+				'product-po-quantity'
+			).value;
+
+			const requestOptions = {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					product: productId,
+					quantity: quantity,
+				}),
+			};
+
+			const res = await fetch(
+				`/protected/createpo?token=${token}`,
+				requestOptions
+			);
+
+			if (res.ok) {
+				window.location.href = `/protected/inventoryManagement?token=${token}`;
+			}
+
+			if (!response.ok) {
+				throw new Error('Error fetching product data');
+			}
+		} catch (e) {
+			console.error(e.message);
+		}
+	});
+
+	const poButton = document.getElementById('po-button');
+	poButton.addEventListener('click', async () => {
+		try {
+			const requestOptions = {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			};
+			const res = await fetch(
+				`/protected/getproducts?token=${token}`,
+				requestOptions
+			);
+			const products = await res.json();
+			renderPOModalDropdown(products);
+
+			if (!response.ok) {
+				throw new Error('Error fetching product data');
+			}
+		} catch (e) {
+			console.error(e.message);
+		}
+	});
+
+	const commitTransferButton = document.getElementById('commit-transfer');
+	commitTransferButton.addEventListener('click', async () => {
+		try {
+			const fromWhId = document.getElementById('from-warehouse-dropdown')
+				.dataset.id;
+			const toWhId = document.getElementById('to-warehouse-dropdown')
+				.dataset.id;
+			const productId =
+				document.getElementById('product-dropdown').dataset.id;
+			const quantity = document.getElementById(
+				'product-transfer-quantity'
+			).value;
+
+			const requestOptions = {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					from: fromWhId,
+					to: toWhId,
+					product: productId,
+					quantity: quantity,
+				}),
+			};
+
+			const res = await fetch(
+				`/protected/transfer?token=${token}`,
+				requestOptions
+			);
+
+			if (res.ok) {
+				window.location.href = `/protected/inventoryManagement?token=${token}`;
+			}
+
+			if (!response.ok) {
+				throw new Error('Error fetching product data');
+			}
+		} catch (e) {
+			console.error(e.message);
+		}
+	});
 });
+
+function renderPOModalDropdown(data) {
+	const poDropDown = document.getElementById('po-product-dropdown');
+	poDropDown.textContent = 'Select product';
+	const poDropDownMenu = poDropDown.nextElementSibling;
+	poDropDownMenu.innerHTML = '';
+
+	data.forEach((entry) => {
+		console.log(entry);
+		const dropdownItem = document.createElement('a');
+		dropdownItem.className = 'dropdown-item';
+		dropdownItem.href = '#';
+		dropdownItem.dataset.id = entry._id;
+		dropdownItem.textContent = `Name: ${entry.name} Brand: ${entry.brand} Category: ${entry.category.name}`;
+		poDropDownMenu.appendChild(dropdownItem);
+	});
+
+	setButtonListener();
+}
+
+function renderTransferModalDropdown(data) {
+	const fromWarehouseDropdown = document.getElementById(
+		'from-warehouse-dropdown'
+	);
+	fromWarehouseDropdown.textContent = 'Select warehouse';
+	const fromWarehouseMenu = fromWarehouseDropdown.nextElementSibling;
+	fromWarehouseMenu.innerHTML = '';
+	const toWarehouseDropdown = document.getElementById(
+		'to-warehouse-dropdown'
+	);
+	toWarehouseDropdown.textContent = 'Select warehouse';
+	const toWarehouseMenu = toWarehouseDropdown.nextElementSibling;
+	toWarehouseMenu.innerHTML = '';
+	const productDropdown = document.getElementById('product-dropdown');
+	productDropdown.textContent = 'Select product';
+	const productMenu = productDropdown.nextElementSibling;
+	productMenu.innerHTML = '';
+	const quantity = document.getElementById('product-transfer-quantity');
+	quantity.setAttribute('min', '0');
+	quantity.setAttribute('max', '0');
+	quantity.setAttribute('value', '0');
+	document.getElementById('quantity-label').textContent = 'Quantity';
+
+	data.forEach((entry) => {
+		const dropdownItem = document.createElement('a');
+		dropdownItem.className = 'dropdown-item';
+		dropdownItem.href = '#';
+		dropdownItem.dataset.id = entry.id;
+		dropdownItem.textContent = entry.name;
+		fromWarehouseMenu.appendChild(dropdownItem);
+	});
+
+	setButtonListener();
+
+	fromWarehouseMenu.querySelectorAll('a.dropdown-item').forEach((item) => {
+		item.addEventListener('click', () => {
+			const selectFromWarehouseId = item.dataset.id;
+			toWarehouseMenu.innerHTML = '';
+			productMenu.innerHTML = '';
+			quantity.setAttribute('min', '0');
+			quantity.setAttribute('max', '0');
+			quantity.setAttribute('value', '0');
+			document.getElementById('quantity-label').textContent = 'Quantity';
+
+			data.forEach((toWarehouse) => {
+				if (toWarehouse.id != selectFromWarehouseId) {
+					const dropdownItem = document.createElement('a');
+					dropdownItem.className = 'dropdown-item';
+					dropdownItem.href = '#';
+					dropdownItem.dataset.id = toWarehouse.id;
+					dropdownItem.textContent = toWarehouse.name;
+					toWarehouseMenu.appendChild(dropdownItem);
+				}
+			});
+
+			const selectedFromWarehouse = data.find((item) => {
+				return item.id == selectFromWarehouseId;
+			});
+
+			if (selectedFromWarehouse) {
+				selectedFromWarehouse.inventory.forEach((product) => {
+					const dropdownItem = document.createElement('a');
+					dropdownItem.className = 'dropdown-item';
+					dropdownItem.href = '#';
+					dropdownItem.dataset.id = product.productId;
+					dropdownItem.textContent = product.productName;
+					productMenu.appendChild(dropdownItem);
+
+					dropdownItem.addEventListener('click', () => {
+						document.getElementById(
+							'quantity-label'
+						).textContent = `Quantity (Max: ${product.quantity})`;
+						quantity.setAttribute('max', product.quantity);
+					});
+				});
+			}
+			setButtonListener();
+		});
+	});
+}
+
+function setButtonListener() {
+	const buttons = document.querySelectorAll('.dropdown-menu a.dropdown-item');
+	buttons.forEach((item) => {
+		item.addEventListener('click', () => {
+			const selectedItem = item;
+			const selectedText = selectedItem.textContent;
+			const selectedId = selectedItem.dataset.id;
+
+			selectedItem
+				.closest('.dropdown')
+				.querySelector('button').textContent = selectedText;
+
+			selectedItem
+				.closest('.dropdown')
+				.querySelector('button')
+				.setAttribute('data-id', selectedId);
+		});
+	});
+}
 
 async function getwhInvent(token, searchString) {
 	try {
@@ -27,7 +257,6 @@ async function getwhInvent(token, searchString) {
 
 async function renderDisplay(token, searchString = null) {
 	const whInventList = await getwhInvent(token, searchString);
-	console.log(whInventList);
 	const inventoryContainer = document.getElementById('inventory-container');
 
 	whInventList.forEach((warehouse) => {
@@ -49,6 +278,7 @@ async function renderDisplay(token, searchString = null) {
 			hiddenRow.classList.toggle('hidden-row');
 		});
 	});
+	return whInventList;
 }
 
 function createHiddenContainer(inventory) {

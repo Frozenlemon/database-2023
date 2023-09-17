@@ -32,6 +32,8 @@ router.get('/', authenticateTokenService, async (req, res) => {
 		const products = response.products;
 		const categories = response.categories;
 		const cateSelect = response.categorySelect;
+		console.log(categories);
+		console.log(products);
 		if (!response.err) {
 			res.status(200).render('index', {
 				products: products,

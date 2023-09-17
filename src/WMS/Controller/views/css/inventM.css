@@ -89,3 +89,19 @@
     margin: 1%;
     float: left;
   }
+
+  .product-dropdown-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .product-quantity-container {
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    align-items: center;
+  }
+
+  .modal-dialog {
+    max-width: 50%;
+  }
