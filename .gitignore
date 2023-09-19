@@ -3,3 +3,5 @@ src/config/mongodb/MongoServerConfig.js
 src/config/sql/asm3.sql
 src/config/sql/Connector.js
 src/Ecom/Service/EcomService.js
+/svr/db/*
+/svr/log/*

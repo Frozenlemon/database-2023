@@ -59,7 +59,7 @@ async function populateWarehouse() {
 		warehouses.push(result.message);
 		return warehouses;
 	} catch (e) {
-		console.error('Error occured', e);
+		console.log('Error occured', e);
 	}
 }
 
@@ -86,7 +86,7 @@ async function populateCategory() {
 		categories.push(result.message.toString());
 		return categories;
 	} catch (e) {
-		console.error('Error occured', e);
+		console.log('Error occured', e);
 	}
 }
 

@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 				window.location.href = `/protected/inventoryManagement?token=${token}`;
 			}
 
-			if (!response.ok) {
+			if (!res.ok) {
 				throw new Error('Error fetching product data');
 			}
 		} catch (e) {
@@ -121,7 +121,6 @@ function renderPOModalDropdown(data) {
 	poDropDownMenu.innerHTML = '';
 
 	data.forEach((entry) => {
-		console.log(entry);
 		const dropdownItem = document.createElement('a');
 		dropdownItem.className = 'dropdown-item';
 		dropdownItem.href = '#';

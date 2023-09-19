@@ -356,7 +356,7 @@ async function getParentCate(user) {
 	try {
 		conn = await getMongoConn(user);
 		const result = await conn.cate
-			.find({ parentCate: null }, '_id name')
+			.find({ parentCate: null })
 			.sort({ name: 1 })
 			.lean()
 			.exec();

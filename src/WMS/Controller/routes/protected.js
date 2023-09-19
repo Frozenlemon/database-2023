@@ -17,6 +17,9 @@ const {
 	createPOService,
 	getParentCateService,
 	getChildCateService,
+	getAllCategoryService,
+	getProductByCateService,
+	insertProductService,
 } = require('../../Service/WMSService');
 
 router.get('/', authenticateTokenService, async (req, res) => {
@@ -147,6 +150,60 @@ router.get('/getparentcate', authenticateTokenService, async (req, res) => {
 		}
 	} catch (e) {
 		console.log(e.message);
+	}
+});
+
+router.get('/getchildcate', authenticateTokenService, async (req, res) => {
+	try {
+		const response = await getChildCateService(req.userRole);
+		if (!response.err) {
+			res.send(response);
+		}
+	} catch (e) {
+		console.log(e.message);
+	}
+});
+
+router.get(
+	'/categoryManagement',
+	authenticateTokenService,
+	async (req, res) => {
+		try {
+			const cateList = await getAllCategoryService(req.userRole);
+			res.render('categoryManagement.ejs', {
+				cateList: cateList.message,
+				token: req.query.token,
+			});
+		} catch (e) {
+			return { error: e, message: e.message };
+		}
+	}
+);
+
+router.get('/getAllCateProduct', authenticateTokenService, async (req, res) => {
+	try {
+		const products = await getProductByCateService(
+			req.userRole,
+			req.query.cateId
+		);
+
+		res.send({ data: products.message });
+	} catch (e) {
+		return { error: e, message: e.message };
+	}
+});
+
+router.post('/createproduct', authenticateTokenService, async (req, res) => {
+	try {
+		const products = await insertProductService(
+			req.userRole,
+			req.body.data
+		);
+		if (!products.err) {
+			res.send(200);
+		}
+	} catch (e) {
+		return { error: e, message: e.message };
 	}
 });
 

@@ -27,6 +27,9 @@ async function authenticateTokenService(req, res, next) {
 	try {
 		const { username } = jwt.verify(token, '92BC8A7FBBD5475D75C11CC1EA98E');
 		const { err, role } = await getUserRole(username);
+		if (role !== 'whadmin' && role !== 'staff') {
+			return res.redirect('/?error=NoPermissionToAccess');
+		}
 		req.userRole = role;
 		next();
 	} catch (e) {

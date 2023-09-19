@@ -7,6 +7,7 @@ const exec = promisify(require('child_process').exec);
 const { MongoClient } = require('mongodb');
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
 
 const [
 	url,
@@ -15,6 +16,7 @@ const [
 	createStaffCommand,
 	createCustomerCommand,
 	createStaffRoleCommand,
+	createWHAdminRoleCommand,
 ] = [
 	'mongodb://127.0.0.1:27017',
 	{
@@ -25,24 +27,17 @@ const [
 	{
 		createUser: 'whadmin',
 		pwd: 'CnSNL2Dw50Hd9gui',
-		roles: [
-			{
-				role: 'readWrite',
-				db: 'application',
-				collection: 'categories',
-			},
-			{ role: 'read', db: 'application', collection: 'products' },
-		],
+		roles: [],
 	},
 	{
 		createUser: 'staff',
 		pwd: 'vVlOlqte0giTh1IQ',
-		roles: ['staffRole'],
+		roles: [],
 	},
 	{
 		createUser: 'customer',
 		pwd: 'vVlOlqte0giTh1IQ',
-		roles: [{ role: 'read', db: 'application' }],
+		roles: [],
 	},
 	{
 		createRole: 'staffRole',
@@ -61,6 +56,20 @@ const [
 		],
 		roles: [],
 	},
+	{
+		createRole: 'customAdminRole',
+		privileges: [
+			{
+				resource: { db: 'application', collection: 'products' },
+				actions: ['find'],
+			},
+			{
+				resource: { db: 'application', collection: 'categories' },
+				actions: ['insert', 'update', 'find'],
+			},
+		],
+		roles: [],
+	},
 ];
 
 async function initMongoDBConfig() {
@@ -74,18 +83,8 @@ async function initMongoDBConfig() {
 		console.log('Connected to MongoDB server');
 
 		let db = conn.db('admin');
-
 		const removeResult = await db.command({ dropAllUsersFromDatabase: 1 });
 		console.log(`Removed ${removeResult.n} users`);
-		try {
-			await db.command({ dropRole: 'staffRole' });
-			console.log('Removed staffRole');
-		} catch (e) {
-			console.log(e.message);
-		}
-
-		await db.command(createStaffRoleCommand);
-		console.log('Created staffRole');
 
 		await db.command(createRootCommand);
 		await db.command(createWhadminCommand);
@@ -94,6 +93,34 @@ async function initMongoDBConfig() {
 		console.log('Created user: root, whadmin, staff, customer');
 
 		db = conn.db('application');
+
+		try {
+			await db.command({ dropRole: 'staffRole' });
+			console.log('Removed staffRole');
+			await db.command({ dropRole: 'customAdminRole' });
+			console.log('Removed customWhadminRole');
+		} catch (e) {
+			console.log(e.message);
+		}
+		await db.command(createStaffRoleCommand);
+		console.log('Created staffRole');
+		await db.command(createWHAdminRoleCommand);
+		console.log('Created adminRole');
+
+		await db.command({
+			updateUser: 'whadmin',
+			roles: [{ role: 'customAdminRole', db: 'application' }],
+		});
+		await db.command({
+			updateUser: 'staff',
+			roles: [{ role: 'staffRole', db: 'application' }],
+		});
+		await db.command({
+			updateUser: 'customer',
+			roles: [{ role: 'read', db: 'application' }],
+		});
+		console.log('Created user: whadmin, staff, customer');
+
 		try {
 			await db.dropCollection('categories');
 			await db.dropCollection('products');
@@ -134,11 +161,15 @@ async function writeConfigFile(configFile, finalConfig, encoding = 'utf8') {
 }
 
 async function setConfig() {
+	const pathString = path.join(__dirname, '..', '..', '..', 'svr');
+	const logPath = path
+		.join(pathString, 'log', 'mongo.log')
+		.replace(/\\/g, '\\\\');
+	const dbPath = path.join(pathString, 'db').replace(/\\/g, '\\\\');
 	const confMac =
 		'systemLog:\n  destination: file\n  path: /Users/minhle/Desktop/svr/log/mongo.log\n  logAppend: true\nstorage:\n  dbPath: /Users/minhle/Desktop/svr/db\nnet:\n  bindIp: 127.0.0.1\n  port: 27017';
 
-	const confWin =
-		'systemLog:\n  destination: file\n  path: "W:\\\\Program Files\\\\MongoDB\\\\Server\\\\7.0\\\\log\\\\mongo.log"\n  logAppend: true\nstorage:\n  dbPath: "W:\\\\Program Files\\\\MongoDB\\\\Server\\\\7.0\\\\data"\nnet:\n  bindIp: 127.0.0.1\n  port: 27017';
+	const confWin = `systemLog:\n  destination: file\n  path: "${logPath}"\n  logAppend: true\nstorage:\n  dbPath: "${dbPath}"\nnet:\n  bindIp: 127.0.0.1\n  port: 27017`;
 
 	try {
 		const platform = os.platform();

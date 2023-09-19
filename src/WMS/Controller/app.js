@@ -8,12 +8,14 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
+// app.set('views', path.join(__dirname, 'views'));
+// app.use(express.static(path.join(__dirname, 'views')));
+// app.use('/views', express.static(path.join(__dirname, '')));
+
+app.use(express.static(path.join(__dirname, '/views')));
+app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'views')));
-app.use('/views', express.static(path.join(__dirname, '')));
-
 app.use('/', require('./routes/auth'));
-
 app.use('/protected', require('./routes/protected'));
 
 //
@@ -33,7 +35,7 @@ app.use('/protected', require('./routes/protected'));
 // 				size: '0.1 x 0.1',
 // 				quantity: '10000',
 // 			},
-// 			{
+// 			{`
 // 				name: 'mouse',
 // 				category: 'electronic',
 // 				size: '0.01 x 0.01',

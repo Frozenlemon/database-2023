@@ -1,6 +1,3 @@
--- Set password validation
-SET GLOBAL validate_password.policy = LOW;
-
 -- Drop role
 drop role if exists warehouse_admin;
 
@@ -85,13 +82,8 @@ create table users(
     role ENUM('whadmin', 'staff', 'customer')
 );
 
--- insert users table
-insert into users (username, password, role)
-values ('admin', '$2b$05$A12iFK9mLG.GCsywdZ8pSettDiBobmROVkD5gKYGQhnHmkqzgZoTy', 'whadmin'),
-       ('staff','$2b$05$A12iFK9mLG.GCsywdZ8pSe8810skpDO4zthGjKw.PFZ5dlMAzK0kG', 'staff'),
-       ('customer', '$2b$05$iiDHJ/P/BQpeFMs/Hh6.2uIF8pNMEyqPV856xmJ7Zr9piwzvae6Py', 'customer');
 
--- Create users table
+-- Create user_cart table
 create table user_cart(
     id int primary key auto_increment,
     userId varchar(255) not null ,
@@ -109,53 +101,95 @@ create table tokens (
 
 -- Create warehouse table
 create table warehouse(
-	id int primary key AUTO_INCREMENT,
+	id int AUTO_INCREMENT,
 	name varchar(100) not null,
 	address varchar(95) not null,
 	city varchar(35) not null,
 	province varchar(35) not null,
 	volume bigint not null,
 	fillVolume bigint not null default 0,
-	unique (address, city, province)
-);
+	city_code int not null ,
+    primary key idx_city_id (city_code, id),
+	unique (id, address, city, province, city_code),
+	index (city_code)
+) partition by list (city_code) (
+    partition p_north values in (1),
+    partition p_center values in (2),
+    partition p_south values in (3),
+    partition other values in (4));
+
+-- alter warehouse table to set default city_code
+ALTER TABLE warehouse
+    ALTER COLUMN city_code SET DEFAULT (
+        CASE
+            WHEN city = 'Hanoi' THEN 1
+            WHEN city = 'Vung Tau' THEN 1
+            WHEN city = 'Da Nang' THEN 2
+            WHEN city = 'Hue' THEN 2
+            WHEN city = 'Ho Chi Minh' THEN 3
+            WHEN city = 'Can Tho' THEN 3
+            ELSE 4
+            END
+        );
 
 -- Create warehouse_inventory table
 create table warehouse_inventory(
-	id bigint primary key AUTO_INCREMENT,
+	id bigint AUTO_INCREMENT primary key ,
 	warehouseId int not null,
     productId varchar(24) not null,
 	quantity bigint not null,
-    foreign key (warehouseId) references warehouse(id),
-    unique (warehouseId, productId)
+    unique (warehouseId, productId),
+    index (warehouseId, productId)
 );
 
 -- Create transaction table
 create table transaction(
-	id bigint primary key AUTO_INCREMENT,
+	id bigint AUTO_INCREMENT,
 	date timestamp not null default now(),
 	userId varchar(255),
     quantity int not null default 0,
     price bigint not null default 0,
-    unique (id, date)
-);
+    transaction_year int as (year(date)) stored ,
+    primary key idx_year_id (id, transaction_year),
+    unique (id, date, userId, transaction_year),
+    index (transaction_year)
+)
+    partition by range (transaction_year) (
+        partition p0 values less than (2023),
+        partition p1 values less than (2024),
+        partition p2 values less than (2025),
+        partition p3 values less than maxvalue );
 
 
 -- Create transaction_detail table
 create table transaction_detail(
-	id bigint primary key AUTO_INCREMENT,
+	id bigint AUTO_INCREMENT primary key ,
 	transId bigint not null,
     productId varchar(24) not null,
     quantity int not null,
     price bigint not null,
-    foreign key (transId) references Transaction(id),
-    unique (transId, productId)
+    unique (transId, productId),
+    index(transId, productId)
 );
 
 -- Create product table
 create table product (
-    id varchar(24) primary key,
-    volume bigint
-);
+    id varchar(24),
+    volume bigint,
+    primary key idx_vol_id (id, volume)
+) partition by range (volume) (
+    partition p0 values less than (1),
+    partition p1 values less than (2),
+    partition p3 values less than (3),
+    partition p4 values less than (4),
+    partition p5 values less than (5),
+    partition p6 values less than (6),
+    partition p7 values less than (7),
+    partition p8 values less than (8),
+    partition p9 values less than (9),
+    partition p10 values less than (10),
+    partition p11 values less than maxvalue
+    );
 
 -- Create index
 create index warehouse_search_index on warehouse (name, address, city, province);
@@ -163,8 +197,6 @@ create index warehouse_search_index on warehouse (name, address, city, province)
 -- Create index
 create index inventory_search_index on warehouse_inventory (warehouseID, productID);
 
--- Define delimiter
--- delimiter //
 
 -- Drop delete_warehouse_validation trigger
 drop trigger if exists delete_warehouse_validation;
@@ -408,6 +440,12 @@ begin
     end if;
 end;
 
+-- insert users table
+insert into users (username, password, role)
+values ('admin', '$2b$05$A12iFK9mLG.GCsywdZ8pSettDiBobmROVkD5gKYGQhnHmkqzgZoTy', 'whadmin'),
+       ('staff','$2b$05$A12iFK9mLG.GCsywdZ8pSe8810skpDO4zthGjKw.PFZ5dlMAzK0kG', 'staff'),
+       ('customer', '$2b$05$iiDHJ/P/BQpeFMs/Hh6.2uIF8pNMEyqPV856xmJ7Zr9piwzvae6Py', 'customer');
+
 -- Grant permission for role
 grant select on public.product to warehouse_admin, warehouse_staff, customer;
 
@@ -442,5 +480,3 @@ alter user 'staff'@'localhost' default role warehouse_staff;
 -- Set role as default for user
 alter user 'customer'@'localhost' default role customer;
 
--- Set delimiter back to default
--- delimiter ;

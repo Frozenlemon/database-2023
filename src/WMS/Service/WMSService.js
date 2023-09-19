@@ -8,6 +8,7 @@ const {
 	getAllProductMongo,
 	getParentCateMongo,
 	getChildCateMongo,
+	getAllCateMongo,
 } = require('../../Repository/MongodbRepo');
 const {
 	insertProductMySql,
@@ -282,10 +283,42 @@ async function getParentCateService(user) {
 
 async function getChildCateService(user) {
 	try {
-		const cateReturn = await getChildCateMongo(user);
-		if (!cateReturn.err) {
-			return cateReturn.message;
+		const childCateReturn = await getChildCateMongo(user);
+		const parentCateReturn = await getParentCateMongo(user);
+		if (!childCateReturn.err && !parentCateReturn.err) {
+			const linkParentIds = new Set();
+			childCateReturn.message.forEach((child) => {
+				linkParentIds.add(child.parentCate._id.toString());
+			});
+			const unlinkedParentCate = parentCateReturn.message.filter(
+				(parent) => {
+					return !linkParentIds.has(parent._id.toString());
+				}
+			);
+			return [...childCateReturn.message, ...unlinkedParentCate];
 		}
+	} catch (e) {
+		return { err: true, message: e.message };
+	}
+}
+
+async function getAllCategoryService(user) {
+	try {
+		const categories = await getAllCateMongo(user);
+		return categories;
+	} catch (e) {
+		return { error: true, message: e.message };
+	}
+}
+
+async function getProductByCateService(user, cateId) {
+	try {
+		const mongoReturn = await getAllProductMongo(user, [], cateId);
+		if (mongoReturn.err) {
+			return { err: true, message: mongoReturn.message };
+		}
+		//need to get quantity from sql server
+		return { err: false, message: mongoReturn.message };
 	} catch (e) {
 		return { err: true, message: e.message };
 	}
@@ -307,4 +340,6 @@ module.exports = {
 	getInventoryService: getInventoryService,
 	getParentCateService: getParentCateService,
 	getChildCateService: getChildCateService,
+	getAllCategoryService: getAllCategoryService,
+	getProductByCateService: getProductByCateService,
 };
