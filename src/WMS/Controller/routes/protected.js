@@ -112,6 +112,8 @@ router.post('/transfer', authenticateTokenService, async (req, res) => {
 		});
 		if (!response.err) {
 			res.send(200);
+		} else {
+			res.send(400);
 		}
 	} catch (e) {
 		console.log(e.message);
@@ -135,6 +137,7 @@ router.post('/createpo', authenticateTokenService, async (req, res) => {
 			id: req.body.product,
 			qty: req.body.quantity,
 		});
+		console.log(response);
 		if (!response.err) {
 			res.send(200);
 		}

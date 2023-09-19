@@ -1,6 +1,8 @@
 async function productButton(token) {
 	// const productButton = document.getElementById('modal-product-button');
 	const data = await fetchChildCategory(token);
+	document.getElementById('product-modal-label').textContent =
+		'Not authorized to create category';
 	renderCate(data);
 }
 
@@ -46,7 +48,8 @@ async function commitCate(token) {
 			window.location.href = `/protected/categoryManagement?token=${token}`;
 		}
 		if (!res.ok) {
-			throw new Error('Not authorize to create product');
+			document.getElementById('cate-modal-label').textContent =
+				'Not authorized to create category';
 		}
 	} catch (e) {
 		console.error(e.message);
@@ -110,7 +113,8 @@ async function commitProduct(token) {
 			window.location.href = `/protected/categoryManagement?token=${token}`;
 		}
 		if (!res.ok) {
-			throw new Error('Not authorize to create product');
+			document.getElementById('product-modal-label').textContent =
+				'Not authorized to create category';
 		}
 	} catch (e) {
 		console.error(e.message);
@@ -120,6 +124,8 @@ async function commitProduct(token) {
 async function cateButton(token) {
 	const cateButton = document.getElementById('modal-cate-button');
 	cateButton.dataset.count = 0;
+	document.getElementById('cate-modal-label').textContent =
+		'Not authorized to create category';
 	const attributeContainer = document.getElementById(
 		'attribute-container-cate'
 	);
@@ -264,7 +270,7 @@ async function fetchChildCategory(token) {
 		method: 'GET',
 	};
 	const products = await fetch(
-		`/protected/getpparentcate?token=${token}`,
+		`/protected/getchildcate?token=${token}`,
 		requestOptions
 	);
 	return await products.json();

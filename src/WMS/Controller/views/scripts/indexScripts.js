@@ -52,10 +52,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 		}
 	});
 
-	const deleteButtons = document.querySelectorAll('.delete-product');
+	const deleteButtons = document.querySelectorAll('.delete-warehouse');
 	deleteButtons.forEach((button) => {
 		button.addEventListener('click', () => {
 			const modal = document.getElementById('deleteModal');
+			modal.querySelector('#deleteModalLabel').textContent =
+				'Confirm delete warehouse';
 			const id = button.getAttribute('data-id');
 			const fillVolume = button.getAttribute('data-fill');
 			const commitButton = document.getElementById('commit-delete');
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 					if (fillVolume > 0) {
 						console.log(fillVolume);
 						modal.querySelector('#deleteModalLabel').textContent =
-							'Delete product fail, warehouse not empty';
+							'Delete warehouse fail, warehouse not empty';
 					} else {
 						const res = await fetch(
 							`/protected/deletewarehouse?token=${token}`,
@@ -99,11 +101,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 		});
 	});
 
-	const updateButtons = document.querySelectorAll('.update-product');
+	const updateButtons = document.querySelectorAll('.update-warehouse');
 
 	updateButtons.forEach((button) => {
 		button.addEventListener('click', () => {
 			const modal = document.getElementById('updateModal');
+			modal.querySelector('#updateModalLabel').textContent =
+				'Update warehouse';
 			const name = button.getAttribute('data-name');
 			const address = button.getAttribute('data-address');
 			const province = button.getAttribute('data-province');
@@ -224,9 +228,9 @@ async function renderDisplay(token, searchDetail = null) {
 		whVolume.innerText = `${warehouse.fillVolume}/${warehouse.volume}`;
 
 		const whModify = document.createElement('td');
-		whModify.innerHTML += `<button type="button" class="btn btn-primary btn-sm update-product" data-toggle="modal" data-target="#updateModal" data-id="${warehouse.id}" data-name="${warehouse.name}" data-address=" ${warehouse.address}" data-city=" ${warehouse.city}" data-province=" ${warehouse.province}" data-volume ="${warehouse.volume}">Update</button>`;
+		whModify.innerHTML += `<button type="button" class="btn btn-primary btn-sm update-warehouse" data-toggle="modal" data-target="#updateModal" data-id="${warehouse.id}" data-name="${warehouse.name}" data-address=" ${warehouse.address}" data-city=" ${warehouse.city}" data-province=" ${warehouse.province}" data-volume ="${warehouse.volume}">Update</button>`;
 
-		whModify.innerHTML += `<button type="button" class="btn btn-primary btn-sm btn-danger delete-product" data-toggle="modal" data-target="#deleteModal" data-id="${warehouse.id}" data-fill="${warehouse.fillVolume}">Delete</button>`;
+		whModify.innerHTML += `<button type="button" class="btn btn-primary btn-sm btn-danger delete-warehouse" data-toggle="modal" data-target="#deleteModal" data-id="${warehouse.id}" data-fill="${warehouse.fillVolume}">Delete</button>`;
 
 		table_row.append(
 			whName,

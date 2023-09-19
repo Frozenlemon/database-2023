@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start-ecom": "cd src/Ecom/Controller/ && node CustomerController.js",
-    "start-wms": "cd src/WMS/Controller/ && node WMSController.js",
+    "start-ecom": "cd src/Ecom/Controller/ && node app.js",
+    "start-wms": "cd src/WMS/Controller/ && node app.js",
     "init": "node src/config/initDemoConfig.js",
     "dev": "node src/WMS/Controller/app.js",
     "test": "echo \"Error: no test specified\" && exit 1",

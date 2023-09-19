@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	const transferButton = document.getElementById('transfer-button');
 	transferButton.addEventListener('click', () => {
+		document.getElementById('transfer-modal-label').textContent =
+			'Transfer product';
 		renderTransferModalDropdown(data);
 	});
 
@@ -104,9 +106,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 			if (res.ok) {
 				window.location.href = `/protected/inventoryManagement?token=${token}`;
 			}
-
 			if (!res.ok) {
-				throw new Error('Error fetching product data');
+				document.getElementById('transfer-modal-label').textContent =
+					'Not Authorize to transfer product';
 			}
 		} catch (e) {
 			console.error(e.message);
