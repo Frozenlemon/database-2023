@@ -4,6 +4,55 @@ async function productButton(token) {
 	renderCate(data);
 }
 
+async function commitCate(token) {
+	const nameValue = document.getElementById('create-cate-name').value;
+	const categoryValue = document.getElementById('parent-cate-dropdown')
+		.dataset.id;
+	const attributesContainer = document.getElementById(
+		'attribute-container-cate'
+	);
+	let attributes = [];
+	attributesContainer.querySelectorAll('.attributes').forEach((attribute) => {
+		attributes.push({ name: attribute.value });
+	});
+
+	try {
+		const requestOptions = {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				data: {
+					name: nameValue,
+					parentId: categoryValue,
+					attribute: attributes,
+				},
+			}),
+		};
+
+		console.log({
+			name: nameValue,
+			parentId: categoryValue,
+			attribute: attributes,
+		});
+
+		const res = await fetch(
+			`/protected/createcategory?token=${token}`,
+			requestOptions
+		);
+
+		if (res.ok) {
+			window.location.href = `/protected/categoryManagement?token=${token}`;
+		}
+		if (!res.ok) {
+			throw new Error('Not authorize to create product');
+		}
+	} catch (e) {
+		console.error(e.message);
+	}
+}
+
 async function commitProduct(token) {
 	const nameValue = document.getElementById('create-name').value;
 	const brandValue = document.getElementById('create-brand').value;
@@ -61,20 +110,38 @@ async function commitProduct(token) {
 			window.location.href = `/protected/categoryManagement?token=${token}`;
 		}
 		if (!res.ok) {
-			throw new Error('Error fetching product data');
+			throw new Error('Not authorize to create product');
 		}
 	} catch (e) {
 		console.error(e.message);
 	}
 }
 
-function cateButton() {
+async function cateButton(token) {
 	const cateButton = document.getElementById('modal-cate-button');
 	cateButton.dataset.count = 0;
 	const attributeContainer = document.getElementById(
 		'attribute-container-cate'
 	);
 	attributeContainer.innerHTML = '';
+
+	const data = await fetchParentCate(token);
+
+	const cateDropDown = document.getElementById('parent-cate-dropdown');
+	cateDropDown.textContent = 'Select category';
+	const cateDropDownMenu = cateDropDown.nextElementSibling;
+	cateDropDownMenu.innerHTML = '';
+
+	data.forEach((entry) => {
+		const dropdownItem = document.createElement('a');
+		dropdownItem.className = 'dropdown-item';
+		dropdownItem.href = '#';
+		dropdownItem.dataset.id = entry._id.toString();
+		dropdownItem.textContent = `${entry.name}`;
+		cateDropDownMenu.appendChild(dropdownItem);
+	});
+
+	setButtonListener();
 }
 
 function renderCate(data) {
@@ -197,7 +264,18 @@ async function fetchChildCategory(token) {
 		method: 'GET',
 	};
 	const products = await fetch(
-		`/protected/getchildcate?token=${token}`,
+		`/protected/getpparentcate?token=${token}`,
+		requestOptions
+	);
+	return await products.json();
+}
+
+async function fetchParentCate(token) {
+	const requestOptions = {
+		method: 'GET',
+	};
+	const products = await fetch(
+		`/protected/getparentcate?token=${token}`,
 		requestOptions
 	);
 	return await products.json();

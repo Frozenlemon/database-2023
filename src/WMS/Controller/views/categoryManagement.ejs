@@ -29,7 +29,7 @@
             <input type="text" placeholder="Search.." name="search">
             <button type="submit"><i class="fa fa-search"></i></button>
         </form>
-        <button class="btn btn-lg btn-primary btn-create" id='modal-cate-button' data-toggle='modal' data-target='#cate-modal' onclick="cateButton()">Create Category</button>
+        <button class="btn btn-lg btn-primary btn-create" id='modal-cate-button' data-toggle='modal' data-target='#cate-modal' onclick="cateButton('<%=token%>')">Create Category</button>
         <button class="btn btn-lg btn-primary btn-create" id='modal-product-button' data-toggle='modal' data-target='#product-modal' onclick="productButton('<%=token%>')">Create Product</button>
     </div>
 
@@ -85,7 +85,20 @@
                             <div class="form-group">
                                 <label for="colFormLabelSm" class="col-sm-2 col-form-label col-form-label-sm">Name</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control form-control-sm" id="edit-name">
+                                    <input type="text" class="form-control form-control-sm" id="create-cate-name">
+                                </div>
+                            </div>
+                        </form>
+                        <form>
+                            <div class="form-group ">
+                                <label for="colFormLabelSm" class="col-lg-auto col-form-label col-form-label-lg">Category</label>
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="parent-cate-dropdown"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Select category
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="cate-dropdown">
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -100,7 +113,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary commit-create" id='commit-cate'>Create</button>
+                        <button type="button" class="btn btn-primary commit-create" id='commit-cate' onclick="commitCate('<%=token%>')">Create</button>
                     </div>
                 </div>
             </div>

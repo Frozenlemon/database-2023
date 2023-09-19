@@ -92,8 +92,6 @@ async function initMongoDBConfig() {
 		await db.command(createCustomerCommand);
 		console.log('Created user: root, whadmin, staff, customer');
 
-		db = conn.db('application');
-
 		try {
 			await db.command({ dropRole: 'staffRole' });
 			console.log('Removed staffRole');
@@ -109,11 +107,11 @@ async function initMongoDBConfig() {
 
 		await db.command({
 			updateUser: 'whadmin',
-			roles: [{ role: 'customAdminRole', db: 'application' }],
+			roles: [{ role: 'customAdminRole', db: 'admin' }],
 		});
 		await db.command({
 			updateUser: 'staff',
-			roles: [{ role: 'staffRole', db: 'application' }],
+			roles: [{ role: 'staffRole', db: 'admin' }],
 		});
 		await db.command({
 			updateUser: 'customer',
@@ -121,6 +119,7 @@ async function initMongoDBConfig() {
 		});
 		console.log('Created user: whadmin, staff, customer');
 
+		db = conn.db('application');
 		try {
 			await db.dropCollection('categories');
 			await db.dropCollection('products');
@@ -169,13 +168,13 @@ async function setConfig() {
 	const confMac =
 		'systemLog:\n  destination: file\n  path: /Users/minhle/Desktop/svr/log/mongo.log\n  logAppend: true\nstorage:\n  dbPath: /Users/minhle/Desktop/svr/db\nnet:\n  bindIp: 127.0.0.1\n  port: 27017';
 
-	const confWin = `systemLog:\n  destination: file\n  path: "${logPath}"\n  logAppend: true\nstorage:\n  dbPath: "${dbPath}"\nnet:\n  bindIp: 127.0.0.1\n  port: 27017`;
+	const confWin = `systemLog:\n  destination: file\n  path: "${logPath}"\n  logAppend: true\nstorage:\n  dbPath: "${dbPath}"\nnet:\n  bindIp: 127.0.0.1\n  port: 27017\n#security:`;
 
 	try {
 		const platform = os.platform();
 		let configFile;
 		if (platform === 'win32') {
-			configFile = 'C:/Program Files/MongoDB/Server/7.0/bin/mongod.cfg';
+			configFile = 'C:/Program Files/MongoDB/Server/6.0/bin/mongod.cfg';
 			await writeConfigFile(configFile, confWin);
 		} else {
 			configFile = '/usr/local/etc/mongod.conf';
@@ -192,7 +191,7 @@ async function updateMongoDBConfig() {
 		const platform = os.platform();
 		let configFile;
 		if (platform === 'win32') {
-			configFile = 'C:/Program Files/MongoDB/Server/7.0/bin/mongod.cfg';
+			configFile = 'C:/Program Files/MongoDB/Server/6.0/bin/mongod.cfg';
 			const data = await readConfigFile(configFile, 'utf8');
 
 			const updateConfig = data.replace(
@@ -275,6 +274,13 @@ async function main() {
 		await setConfig();
 		await startMongoDB();
 		await initMongoDBConfig();
+	} catch (e) {
+		console.error('Error occured', e);
+	}
+}
+
+async function enableAccess() {
+	try {
 		await stopMongoDB();
 		await updateMongoDBConfig();
 		await startMongoDB();
@@ -283,4 +289,4 @@ async function main() {
 	}
 }
 
-module.exports = { initMongoDB: main };
+module.exports = { initMongoDB: main, enableAccess: enableAccess };

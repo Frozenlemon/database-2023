@@ -20,6 +20,7 @@ const {
 	getAllCategoryService,
 	getProductByCateService,
 	insertProductService,
+	insertCategoryService,
 } = require('../../Service/WMSService');
 
 router.get('/', authenticateTokenService, async (req, res) => {
@@ -201,6 +202,24 @@ router.post('/createproduct', authenticateTokenService, async (req, res) => {
 		);
 		if (!products.err) {
 			res.send(200);
+		} else {
+			res.send(400);
+		}
+	} catch (e) {
+		return { error: e, message: e.message };
+	}
+});
+
+router.post('/createcategory', authenticateTokenService, async (req, res) => {
+	try {
+		const products = await insertCategoryService(
+			req.userRole,
+			req.body.data
+		);
+		if (!products.err) {
+			res.send(200);
+		} else {
+			res.send(400);
 		}
 	} catch (e) {
 		return { error: e, message: e.message };
