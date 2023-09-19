@@ -174,7 +174,7 @@ async function setConfig() {
 		const platform = os.platform();
 		let configFile;
 		if (platform === 'win32') {
-			configFile = 'C:/Program Files/MongoDB/Server/7.0/bin/mongod.cfg';
+			configFile = 'C:/Program Files/MongoDB/Server/6.0/bin/mongod.cfg';
 			await writeConfigFile(configFile, confWin);
 		} else {
 			configFile = '/usr/local/etc/mongod.conf';
@@ -191,7 +191,7 @@ async function updateMongoDBConfig() {
 		const platform = os.platform();
 		let configFile;
 		if (platform === 'win32') {
-			configFile = 'C:/Program Files/MongoDB/Server/7.0/bin/mongod.cfg';
+			configFile = 'C:/Program Files/MongoDB/Server/6.0/bin/mongod.cfg';
 			const data = await readConfigFile(configFile, 'utf8');
 
 			const updateConfig = data.replace(
